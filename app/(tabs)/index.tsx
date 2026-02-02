@@ -1,98 +1,181 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import React, { useState, useCallback } from 'react';
+import { View, Text, ScrollView, Pressable, RefreshControl } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Moon, Baby, Droplets, Milk, ChevronDown } from 'lucide-react-native';
+import * as Haptics from 'expo-haptics';
+import { QuickLogButton } from '../../src/components/logging/QuickLogButton';
+import { TodaySchedule } from '../../src/components/schedule/TodaySchedule';
+import { PatternGrid } from '../../src/components/patterns/PatternGrid';
+import { SleepLogSheet } from '../../src/components/logging/SleepLogSheet';
+import { FeedingLogSheet } from '../../src/components/logging/FeedingLogSheet';
+import { DiaperLogSheet } from '../../src/components/logging/DiaperLogSheet';
+import { PumpingLogSheet } from '../../src/components/logging/PumpingLogSheet';
+import { useAppStore } from '../../src/stores/appStore';
+import { useBabyStore } from '../../src/stores/babyStore';
+import { usePatternData } from '../../src/hooks/usePatternData';
+import { useTodayStats } from '../../src/hooks/useTodayStats';
+import { useIsDark } from '../../src/components/ThemeProvider';
+import { formatRelativeTime } from '../../src/utils/dates';
+import { formatVolume } from '../../src/utils/units';
 
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
+type SheetType = 'sleep' | 'feeding' | 'diaper' | 'pumping' | null;
 
 export default function HomeScreen() {
-  return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
-            <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert('Share pressed')}
-            />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert('Delete pressed')}
-              />
-            </Link.Menu>
-          </Link.Menu>
-        </Link>
+  const [activeSheet, setActiveSheet] = useState<SheetType>(null);
+  const [showBabyPicker, setShowBabyPicker] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+  const selectedBabyId = useAppStore((s) => s.selectedBabyId);
+  const setSelectedBaby = useAppStore((s) => s.setSelectedBaby);
+  const useMetricUnits = useAppStore((s) => s.useMetricUnits);
+  const babies = useBabyStore((s) => s.babies);
+  const isDark = useIsDark();
+
+  const selectedBaby = babies.find((b) => b.id === selectedBabyId);
+
+  const { activities, refresh: refreshPatterns } = usePatternData(selectedBabyId, 2);
+  const stats = useTodayStats(selectedBabyId);
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await Promise.all([refreshPatterns(), stats.refresh()]);
+    setRefreshing(false);
+  }, [refreshPatterns, stats.refresh]);
+
+  const handleLogSaved = () => {
+    stats.refresh();
+    refreshPatterns();
+  };
+
+  return (
+    <SafeAreaView className="flex-1 bg-white dark:bg-black" edges={['top']}>
+      <ScrollView
+        className="flex-1"
+        contentContainerStyle={{ padding: 16 }}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={isDark ? '#FFFFFF' : '#000000'}
+          />
+        }
+      >
+        {/* Header */}
+        <View className="flex-row items-center justify-between mb-6">
+          <Text className="text-2xl font-bold text-black dark:text-white">Dotsby</Text>
+          <Pressable
+            onPress={() => {
+              Haptics.selectionAsync();
+              setShowBabyPicker(!showBabyPicker);
+            }}
+            className="flex-row items-center bg-gray-100 dark:bg-zinc-800 px-4 py-2 rounded-full"
+          >
+            <Text className="text-black dark:text-white font-medium mr-1">
+              {selectedBaby?.name || 'Select Baby'}
+            </Text>
+            <ChevronDown size={16} color={isDark ? '#FFFFFF' : '#000000'} />
+          </Pressable>
+        </View>
+
+        {/* Baby Picker Dropdown */}
+        {showBabyPicker && babies.length > 1 && (
+          <View className="bg-gray-100 dark:bg-zinc-800 rounded-xl mb-4 overflow-hidden">
+            {babies.map((baby) => (
+              <Pressable
+                key={baby.id}
+                onPress={() => {
+                  Haptics.selectionAsync();
+                  setSelectedBaby(baby.id);
+                  setShowBabyPicker(false);
+                }}
+                className={`p-4 border-b border-gray-200 dark:border-zinc-700 ${
+                  baby.id === selectedBabyId ? 'bg-black dark:bg-white' : ''
+                }`}
+              >
+                <Text
+                  className={`font-medium ${
+                    baby.id === selectedBabyId ? 'text-white dark:text-black' : 'text-black dark:text-white'
+                  }`}
+                >
+                  {baby.name}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+        )}
+
+        {/* Quick Log Buttons */}
+        <View className="flex-row gap-3 mb-3">
+          <QuickLogButton
+            title="Sleep"
+            icon={Moon}
+            onPress={() => setActiveSheet('sleep')}
+            subtitle={stats.lastSleep ? formatRelativeTime(stats.lastSleep.endTime || stats.lastSleep.startTime) : undefined}
+          />
+          <QuickLogButton
+            title="Feed"
+            icon={Baby}
+            onPress={() => setActiveSheet('feeding')}
+            badge={stats.feedCount > 0 ? stats.feedCount : undefined}
+            subtitle={stats.lastNursingSide ? `Last: ${stats.lastNursingSide}` : undefined}
+          />
+        </View>
+
+        <View className="flex-row gap-3 mb-6">
+          <QuickLogButton
+            title="Diaper"
+            icon={Droplets}
+            onPress={() => setActiveSheet('diaper')}
+            badge={stats.diaperCounts.wet + stats.diaperCounts.dirty > 0 ? stats.diaperCounts.wet + stats.diaperCounts.dirty : undefined}
+          />
+          <QuickLogButton
+            title="Pump"
+            icon={Milk}
+            onPress={() => setActiveSheet('pumping')}
+            subtitle={stats.pumpingOz > 0 ? `${formatVolume(stats.pumpingOz, useMetricUnits)} today` : undefined}
+          />
+        </View>
+
+        {/* Today's Schedule */}
+        <View className="mb-6">
+          <Text className="text-lg font-semibold text-black dark:text-white mb-3">Today's Schedule</Text>
+          <TodaySchedule babyId={selectedBabyId} />
+        </View>
+
+        {/* Mini Pattern Graph */}
+        <View className="mb-6">
+          <Text className="text-lg font-semibold text-black dark:text-white mb-3">This Week</Text>
+          <PatternGrid activities={activities} weeks={2} showLegend={false} />
+        </View>
+      </ScrollView>
+
+      {/* Log Sheets */}
+      <SleepLogSheet
+        isOpen={activeSheet === 'sleep'}
+        onClose={() => setActiveSheet(null)}
+        babyId={selectedBabyId}
+        onSaved={handleLogSaved}
+      />
+      <FeedingLogSheet
+        isOpen={activeSheet === 'feeding'}
+        onClose={() => setActiveSheet(null)}
+        babyId={selectedBabyId}
+        lastNursingSide={stats.lastNursingSide}
+        onSaved={handleLogSaved}
+      />
+      <DiaperLogSheet
+        isOpen={activeSheet === 'diaper'}
+        onClose={() => setActiveSheet(null)}
+        babyId={selectedBabyId}
+        onSaved={handleLogSaved}
+      />
+      <PumpingLogSheet
+        isOpen={activeSheet === 'pumping'}
+        onClose={() => setActiveSheet(null)}
+        babyId={selectedBabyId}
+        onSaved={handleLogSaved}
+      />
+    </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
-  },
-});

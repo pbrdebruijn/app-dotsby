@@ -1,25 +1,30 @@
 {
   "expo": {
-    "name": "app-dotsby",
-    "slug": "app-dotsby",
+    "name": "Dotsby",
+    "slug": "dotsby",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "appdotsby",
+    "scheme": "dotsby",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.dotsby.app",
+      "infoPlist": {
+        "NSCameraUsageDescription": "Take milestone photos of your baby",
+        "NSPhotoLibraryUsageDescription": "Save milestone photos to your library"
+      }
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
+        "backgroundColor": "#FFFFFF",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "package": "com.dotsby.app"
     },
     "web": {
       "output": "static",
@@ -27,6 +32,21 @@
     },
     "plugins": [
       "expo-router",
+      "expo-sqlite",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/icon.png",
+          "color": "#000000"
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow Dotsby to access your photos for milestone tracking",
+          "cameraPermission": "Allow Dotsby to take photos for milestone tracking"
+        }
+      ],
       [
         "expo-splash-screen",
         {
@@ -38,7 +58,8 @@
             "backgroundColor": "#000000"
           }
         }
-      ]
+      ],
+      "@react-native-community/datetimepicker"
     ],
     "experiments": {
       "typedRoutes": true,
