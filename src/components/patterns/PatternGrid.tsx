@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { View, Text, LayoutChangeEvent } from 'react-native';
-import Svg, { Rect } from 'react-native-svg';
+import Svg, { Rect, Circle } from 'react-native-svg';
 import * as Haptics from 'expo-haptics';
 import { getIntensityColor } from '../../services/patternCalculator';
 import { useIsDark } from '../ThemeProvider';
@@ -95,6 +95,8 @@ export function PatternGrid({
     return result;
   }, [activities, weeks]);
 
+  const todayStr = new Date().toISOString().split('T')[0];
+
   const handleDayPress = (activity: DayActivity | null) => {
     if (activity && activity.date && onDayPress) {
       Haptics.selectionAsync();
@@ -131,17 +133,34 @@ export function PatternGrid({
                 week.map((day, dayIndex) => {
                   if (!day) return null;
 
+                  const x = weekIndex * (dotSize + dotGap);
+                  const y = dayIndex * (dotSize + dotGap);
+                  const isToday = day.date === todayStr;
+
                   return (
-                    <Rect
-                      key={`${weekIndex}-${dayIndex}`}
-                      x={weekIndex * (dotSize + dotGap)}
-                      y={dayIndex * (dotSize + dotGap)}
-                      width={dotSize}
-                      height={dotSize}
-                      rx={dotRadius}
-                      fill={getIntensityColor(day.intensity, isDark)}
-                      onPress={() => handleDayPress(day)}
-                    />
+                    <React.Fragment key={`${weekIndex}-${dayIndex}`}>
+                      <Rect
+                        x={x}
+                        y={y}
+                        width={dotSize}
+                        height={dotSize}
+                        rx={dotRadius}
+                        fill={getIntensityColor(day.intensity, isDark)}
+                        stroke={isToday ? (isDark ? '#FFFFFF' : '#000000') : 'none'}
+                        strokeWidth={isToday ? 1.5 : 0}
+                        strokeOpacity={isToday ? 0.4 : 0}
+                        onPress={() => handleDayPress(day)}
+                      />
+                      {isToday && dotSize >= 6 && (
+                        <Circle
+                          cx={x + dotSize / 2}
+                          cy={y + dotSize + 2}
+                          r={1.5}
+                          fill={isDark ? '#FFFFFF' : '#000000'}
+                          opacity={0.5}
+                        />
+                      )}
+                    </React.Fragment>
                   );
                 })
               )}
