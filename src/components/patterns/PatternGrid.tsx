@@ -24,9 +24,11 @@ export function PatternGrid({
   showDayLabels = true,
 }: PatternGridProps) {
   const isDark = useIsDark();
-  const dotSize = weeks <= 2 ? 28 : 12;
-  const dotGap = weeks <= 2 ? 6 : 4;
-  const dotRadius = weeks <= 2 ? 6 : 2;
+  // Keep grid height constant across all week ranges
+  const TARGET_HEIGHT = 112;
+  const dotGap = 4;
+  const dotSize = Math.floor((TARGET_HEIGHT - dotGap * 6) / 7);
+  const dotRadius = weeks <= 2 ? 4 : 2;
   const gridWidth = weeks * (dotSize + dotGap);
   const gridHeight = 7 * (dotSize + dotGap);
 
@@ -95,17 +97,17 @@ export function PatternGrid({
       <View className="flex-row">
         {/* Day labels */}
         {showDayLabels && (
-          <View className="mr-2" style={{ width: weeks <= 2 ? 24 : 16 }}>
+          <View className="mr-2" style={{ width: 16 }}>
             {DAYS_OF_WEEK.map((day, i) => (
               <Text
                 key={i}
-                className={`text-gray-400 ${weeks <= 2 ? 'text-sm' : 'text-xs'}`}
+                className="text-xs text-gray-400"
                 style={{
                   height: dotSize + dotGap,
                   lineHeight: dotSize + dotGap,
                 }}
               >
-                {weeks <= 2 ? day : i % 2 === 0 ? day : ''}
+                {i % 2 === 0 ? day : ''}
               </Text>
             ))}
           </View>
