@@ -13,7 +13,8 @@
       "bundleIdentifier": "com.dotsby.app",
       "infoPlist": {
         "NSCameraUsageDescription": "Take milestone photos of your baby",
-        "NSPhotoLibraryUsageDescription": "Save milestone photos to your library"
+        "NSPhotoLibraryUsageDescription": "Save milestone photos to your library",
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
@@ -24,7 +25,10 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.dotsby.app"
+      "package": "com.dotsby.app",
+      "permissions": [
+        "android.permission.RECORD_AUDIO"
+      ]
     },
     "web": {
       "output": "static",
@@ -64,6 +68,12 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "a2bc4d4c-4afe-4b10-ae14-7ae3b1acae00"
+      }
     }
   }
 }
