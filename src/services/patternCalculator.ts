@@ -44,17 +44,17 @@ export function calculateIntensity(data: ActivityData): number {
 
 export const INTENSITY_COLORS = {
   light: [
-    '#F5F5F5', // 0 - no data
-    '#E0E0E0', // 1 - low
-    '#AAAAAA', // 2 - medium-low
-    '#666666', // 3 - medium-high
+    '#EEEEF0', // 0 - no data
+    '#C0C0C4', // 1 - low
+    '#808088', // 2 - medium-low
+    '#44444C', // 3 - medium-high
     '#000000', // 4 - high
   ],
   dark: [
-    '#1A1A1A', // 0 - no data
-    '#333333', // 1 - low
-    '#555555', // 2 - medium-low
-    '#888888', // 3 - medium-high
+    '#1C1C1E', // 0 - no data
+    '#3A3A3C', // 1 - low
+    '#6C6C70', // 2 - medium-low
+    '#AEAEB2', // 3 - medium-high
     '#FFFFFF', // 4 - high
   ],
 };
