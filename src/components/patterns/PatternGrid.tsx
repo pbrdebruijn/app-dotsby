@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { View, Text, LayoutChangeEvent } from 'react-native';
-import Svg, { Rect, Circle } from 'react-native-svg';
+import Svg, { Rect } from 'react-native-svg';
 import * as Haptics from 'expo-haptics';
 import { getIntensityColor } from '../../services/patternCalculator';
 import { useIsDark } from '../ThemeProvider';
@@ -43,26 +43,28 @@ export function PatternGrid({
   const gridHeight = 7 * (dotSize + dotGap);
 
   // Organize activities into weeks (columns) with days (rows)
+  // Anchor the grid so the last column always contains today
   const grid = useMemo(() => {
     const result: (DayActivity | null)[][] = [];
-
-    // Get the most recent activity dates
     const endDate = new Date();
-    const startDate = new Date();
-    startDate.setDate(startDate.getDate() - weeks * 7 + 1);
+
+    // Find Monday of the current week
+    const today = new Date();
+    const todayDow = today.getDay();
+    const daysFromMonday = todayDow === 0 ? 6 : todayDow - 1;
+    const currentWeekMonday = new Date(today);
+    currentWeekMonday.setDate(today.getDate() - daysFromMonday);
+
+    // Start from (weeks - 1) weeks before this Monday
+    const gridStart = new Date(currentWeekMonday);
+    gridStart.setDate(currentWeekMonday.getDate() - (weeks - 1) * 7);
 
     // Create a map of date -> activity
     const activityMap = new Map(
       activities.map((a) => [a.date, a])
     );
 
-    // Build grid: each week is a column, each day is a row (0=Monday, 6=Sunday)
-    let currentDate = new Date(startDate);
-
-    // Adjust to start on Monday
-    const dayOfWeek = currentDate.getDay();
-    const daysFromMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
-    currentDate.setDate(currentDate.getDate() - daysFromMonday);
+    let currentDate = new Date(gridStart);
 
     for (let week = 0; week < weeks; week++) {
       const weekData: (DayActivity | null)[] = [];
@@ -138,29 +140,19 @@ export function PatternGrid({
                   const isToday = day.date === todayStr;
 
                   return (
-                    <React.Fragment key={`${weekIndex}-${dayIndex}`}>
-                      <Rect
-                        x={x}
-                        y={y}
-                        width={dotSize}
-                        height={dotSize}
-                        rx={dotRadius}
-                        fill={getIntensityColor(day.intensity, isDark)}
-                        stroke={isToday ? (isDark ? '#FFFFFF' : '#000000') : 'none'}
-                        strokeWidth={isToday ? 1.5 : 0}
-                        strokeOpacity={isToday ? 0.4 : 0}
-                        onPress={() => handleDayPress(day)}
-                      />
-                      {isToday && dotSize >= 6 && (
-                        <Circle
-                          cx={x + dotSize / 2}
-                          cy={y + dotSize + 2}
-                          r={1.5}
-                          fill={isDark ? '#FFFFFF' : '#000000'}
-                          opacity={0.5}
-                        />
-                      )}
-                    </React.Fragment>
+                    <Rect
+                      key={`${weekIndex}-${dayIndex}`}
+                      x={x}
+                      y={y}
+                      width={dotSize}
+                      height={dotSize}
+                      rx={dotRadius}
+                      fill={getIntensityColor(day.intensity, isDark)}
+                      stroke={isToday ? (isDark ? '#FFFFFF' : '#000000') : 'none'}
+                      strokeWidth={isToday ? 1.5 : 0}
+                      strokeOpacity={isToday ? 0.4 : 0}
+                      onPress={() => handleDayPress(day)}
+                    />
                   );
                 })
               )}
