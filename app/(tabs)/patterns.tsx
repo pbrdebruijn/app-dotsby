@@ -2,6 +2,7 @@ import React, { useState, useCallback } from 'react';
 import { View, Text, ScrollView, Pressable, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
+import { Moon, Baby, Droplets, Milk } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { PatternGrid } from '../../src/components/patterns/PatternGrid';
 import { DayDetailSheet } from '../../src/components/patterns/DayDetailSheet';
@@ -10,14 +11,15 @@ import { useBabyStore } from '../../src/stores/babyStore';
 import { usePatternData } from '../../src/hooks/usePatternData';
 import { useIsDark } from '../../src/components/ThemeProvider';
 import { formatDuration } from '../../src/utils/dates';
+import { getIntensityColor } from '../../src/services/patternCalculator';
 import { FREE_PATTERN_WEEKS_OPTIONS, PREMIUM_PATTERN_WEEKS_OPTIONS } from '../../src/utils/premium';
 import type { DayActivity } from '../../src/types';
 
-type TimeRange = 4 | 8 | 12 | 26 | 52;
+type TimeRange = 1 | 4 | 8 | 12 | 26 | 52;
 
 export default function PatternsScreen() {
   const [selectedDay, setSelectedDay] = useState<DayActivity | null>(null);
-  const [timeRange, setTimeRange] = useState<TimeRange>(12);
+  const [timeRange, setTimeRange] = useState<TimeRange>(1);
   const [refreshing, setRefreshing] = useState(false);
 
   const router = useRouter();
@@ -51,6 +53,9 @@ export default function PatternsScreen() {
 
   const avgSleepPerDay = totals.daysWithData > 0 ? totals.sleepMinutes / totals.daysWithData : 0;
   const avgFeedsPerDay = totals.daysWithData > 0 ? totals.feedCount / totals.daysWithData : 0;
+
+  const todayStr = new Date().toISOString().split('T')[0];
+  const todayActivity = activities.find((a) => a.date === todayStr);
 
   return (
     <SafeAreaView className="flex-1 bg-white dark:bg-black" edges={['top']}>
@@ -118,6 +123,67 @@ export default function PatternsScreen() {
             </Pressable>
           )}
         </View>
+
+        {/* Today's Activity Card — shown when data is sparse */}
+        {todayActivity && todayActivity.intensity > 0 && totals.daysWithData <= 7 && (
+          <View className="mb-6">
+            <Text className="text-lg font-semibold text-black dark:text-white mb-3">Today</Text>
+            <View className="bg-gray-100 dark:bg-zinc-900 rounded-2xl p-4">
+              <View className="flex-row items-center mb-4">
+                <View
+                  className="w-5 h-5 rounded-sm mr-2"
+                  style={{ backgroundColor: getIntensityColor(todayActivity.intensity, isDark) }}
+                />
+                <Text className="text-black dark:text-white font-medium">
+                  {todayActivity.intensity >= 3 ? 'Active' : todayActivity.intensity === 2 ? 'Moderate' : 'Light'} day
+                </Text>
+              </View>
+              <View className="flex-row gap-3">
+                {todayActivity.sleepMinutes > 0 && (
+                  <View className="flex-1 bg-white dark:bg-zinc-800 rounded-xl p-3 items-center">
+                    <Moon size={20} color={isDark ? '#FFFFFF' : '#000000'} strokeWidth={1.5} />
+                    <Text className="text-black dark:text-white font-semibold mt-1">
+                      {formatDuration(todayActivity.sleepMinutes)}
+                    </Text>
+                    <Text className="text-gray-500 text-xs">Sleep</Text>
+                  </View>
+                )}
+                {todayActivity.feedCount > 0 && (
+                  <View className="flex-1 bg-white dark:bg-zinc-800 rounded-xl p-3 items-center">
+                    <Baby size={20} color={isDark ? '#FFFFFF' : '#000000'} strokeWidth={1.5} />
+                    <Text className="text-black dark:text-white font-semibold mt-1">
+                      {todayActivity.feedCount}
+                    </Text>
+                    <Text className="text-gray-500 text-xs">Feeds</Text>
+                  </View>
+                )}
+                {todayActivity.diaperCount > 0 && (
+                  <View className="flex-1 bg-white dark:bg-zinc-800 rounded-xl p-3 items-center">
+                    <Droplets size={20} color={isDark ? '#FFFFFF' : '#000000'} strokeWidth={1.5} />
+                    <Text className="text-black dark:text-white font-semibold mt-1">
+                      {todayActivity.diaperCount}
+                    </Text>
+                    <Text className="text-gray-500 text-xs">Diapers</Text>
+                  </View>
+                )}
+                {todayActivity.pumpingOz > 0 && (
+                  <View className="flex-1 bg-white dark:bg-zinc-800 rounded-xl p-3 items-center">
+                    <Milk size={20} color={isDark ? '#FFFFFF' : '#000000'} strokeWidth={1.5} />
+                    <Text className="text-black dark:text-white font-semibold mt-1">
+                      {todayActivity.pumpingOz.toFixed(1)}
+                    </Text>
+                    <Text className="text-gray-500 text-xs">oz pumped</Text>
+                  </View>
+                )}
+              </View>
+            </View>
+            {totals.daysWithData <= 3 && (
+              <Text className="text-gray-400 text-sm text-center mt-3">
+                Keep tracking to see patterns emerge over time
+              </Text>
+            )}
+          </View>
+        )}
 
         {/* Stats Summary */}
         <View className="mb-6">

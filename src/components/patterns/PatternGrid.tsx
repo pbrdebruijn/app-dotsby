@@ -14,8 +14,6 @@ interface PatternGridProps {
   showDayLabels?: boolean;
 }
 
-const DOT_SIZE = 12;
-const DOT_GAP = 4;
 const DAYS_OF_WEEK = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 
 export function PatternGrid({
@@ -26,8 +24,11 @@ export function PatternGrid({
   showDayLabels = true,
 }: PatternGridProps) {
   const isDark = useIsDark();
-  const gridWidth = weeks * (DOT_SIZE + DOT_GAP);
-  const gridHeight = 7 * (DOT_SIZE + DOT_GAP);
+  const dotSize = weeks <= 2 ? 28 : 12;
+  const dotGap = weeks <= 2 ? 6 : 4;
+  const dotRadius = weeks <= 2 ? 6 : 2;
+  const gridWidth = weeks * (dotSize + dotGap);
+  const gridHeight = 7 * (dotSize + dotGap);
 
   // Organize activities into weeks (columns) with days (rows)
   const grid = useMemo(() => {
@@ -94,17 +95,17 @@ export function PatternGrid({
       <View className="flex-row">
         {/* Day labels */}
         {showDayLabels && (
-          <View className="mr-2" style={{ width: 16 }}>
+          <View className="mr-2" style={{ width: weeks <= 2 ? 24 : 16 }}>
             {DAYS_OF_WEEK.map((day, i) => (
               <Text
                 key={i}
-                className="text-xs text-gray-400"
+                className={`text-gray-400 ${weeks <= 2 ? 'text-sm' : 'text-xs'}`}
                 style={{
-                  height: DOT_SIZE + DOT_GAP,
-                  lineHeight: DOT_SIZE + DOT_GAP,
+                  height: dotSize + dotGap,
+                  lineHeight: dotSize + dotGap,
                 }}
               >
-                {i % 2 === 0 ? day : ''}
+                {weeks <= 2 ? day : i % 2 === 0 ? day : ''}
               </Text>
             ))}
           </View>
@@ -119,11 +120,11 @@ export function PatternGrid({
               return (
                 <Rect
                   key={`${weekIndex}-${dayIndex}`}
-                  x={weekIndex * (DOT_SIZE + DOT_GAP)}
-                  y={dayIndex * (DOT_SIZE + DOT_GAP)}
-                  width={DOT_SIZE}
-                  height={DOT_SIZE}
-                  rx={2}
+                  x={weekIndex * (dotSize + dotGap)}
+                  y={dayIndex * (dotSize + dotGap)}
+                  width={dotSize}
+                  height={dotSize}
+                  rx={dotRadius}
                   fill={getIntensityColor(day.intensity, isDark)}
                   onPress={() => handleDayPress(day)}
                 />

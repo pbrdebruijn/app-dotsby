@@ -3,6 +3,7 @@ import { Tabs } from 'expo-router';
 import { Home, BarChart3, Image, Settings } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { Pressable } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useIsDark } from '../../src/components/ThemeProvider';
 
 function HapticTabButton(props: any) {
@@ -19,6 +20,7 @@ function HapticTabButton(props: any) {
 
 export default function TabLayout() {
   const isDark = useIsDark();
+  const insets = useSafeAreaInsets();
 
   return (
     <Tabs
@@ -31,8 +33,8 @@ export default function TabLayout() {
           borderTopColor: isDark ? '#333333' : '#E5E5E5',
           borderTopWidth: 1,
           paddingTop: 8,
-          paddingBottom: 8,
-          height: 60,
+          paddingBottom: insets.bottom + 8,
+          height: 60 + insets.bottom,
         },
         tabBarLabelStyle: {
           fontSize: 11,
