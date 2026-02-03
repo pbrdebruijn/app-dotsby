@@ -11,6 +11,7 @@ import { useBabyStore } from '../../src/stores/babyStore';
 import { usePatternData } from '../../src/hooks/usePatternData';
 import { useIsDark } from '../../src/components/ThemeProvider';
 import { formatDuration } from '../../src/utils/dates';
+import { formatVolume } from '../../src/utils/units';
 import { getIntensityColor } from '../../src/services/patternCalculator';
 import { FREE_PATTERN_WEEKS_OPTIONS, PREMIUM_PATTERN_WEEKS_OPTIONS } from '../../src/utils/premium';
 import type { DayActivity } from '../../src/types';
@@ -25,6 +26,7 @@ export default function PatternsScreen() {
   const router = useRouter();
   const selectedBabyId = useAppStore((s) => s.selectedBabyId);
   const hasUnlockedPremium = useAppStore((s) => s.hasUnlockedPremium);
+  const useMetricUnits = useAppStore((s) => s.useMetricUnits);
   const babies = useBabyStore((s) => s.babies);
   const selectedBaby = babies.find((b) => b.id === selectedBabyId);
   const isDark = useIsDark();
@@ -170,9 +172,9 @@ export default function PatternsScreen() {
                   <View className="flex-1 bg-white dark:bg-zinc-800 rounded-xl p-3 items-center">
                     <Milk size={20} color={isDark ? '#FFFFFF' : '#000000'} strokeWidth={1.5} />
                     <Text className="text-black dark:text-white font-semibold mt-1">
-                      {todayActivity.pumpingOz.toFixed(1)}
+                      {formatVolume(todayActivity.pumpingOz, useMetricUnits)}
                     </Text>
-                    <Text className="text-gray-500 text-xs">oz pumped</Text>
+                    <Text className="text-gray-500 text-xs">Pumped</Text>
                   </View>
                 )}
               </View>
@@ -212,7 +214,7 @@ export default function PatternsScreen() {
             <View className="flex-row justify-between">
               <Text className="text-gray-600 dark:text-gray-400">Total pumped</Text>
               <Text className="font-semibold text-black dark:text-white">
-                {totals.pumpingOz > 0 ? `${totals.pumpingOz.toFixed(1)} oz` : '--'}
+                {totals.pumpingOz > 0 ? formatVolume(totals.pumpingOz, useMetricUnits) : '--'}
               </Text>
             </View>
           </View>

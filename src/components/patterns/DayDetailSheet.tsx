@@ -4,7 +4,9 @@ import { Moon, Baby, Droplets, Milk, Camera } from 'lucide-react-native';
 import { Sheet } from '../ui/Sheet';
 import { useIsDark } from '../ThemeProvider';
 import { formatDuration, formatDate } from '../../utils/dates';
+import { formatVolume } from '../../utils/units';
 import { getIntensityLabel, getIntensityColor } from '../../services/patternCalculator';
+import { useAppStore } from '../../stores/appStore';
 import type { DayActivity } from '../../types';
 
 interface DayDetailSheetProps {
@@ -15,6 +17,7 @@ interface DayDetailSheetProps {
 
 export function DayDetailSheet({ isOpen, onClose, activity }: DayDetailSheetProps) {
   const isDark = useIsDark();
+  const useMetricUnits = useAppStore((s) => s.useMetricUnits);
 
   if (!activity) return null;
 
@@ -40,7 +43,7 @@ export function DayDetailSheet({ isOpen, onClose, activity }: DayDetailSheetProp
     {
       icon: Milk,
       label: 'Pumping',
-      value: activity.pumpingOz > 0 ? `${activity.pumpingOz.toFixed(1)} oz` : 'No data',
+      value: activity.pumpingOz > 0 ? formatVolume(activity.pumpingOz, useMetricUnits) : 'No data',
       hasData: activity.pumpingOz > 0,
     },
     {
