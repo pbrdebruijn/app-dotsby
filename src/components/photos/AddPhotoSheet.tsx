@@ -8,8 +8,10 @@ import { Sheet } from '../ui/Sheet';
 import { Button } from '../ui/Button';
 import { Input, NumberInput } from '../ui/Input';
 import { useIsDark } from '../ThemeProvider';
-import { insertPhoto } from '../../db/queries/photos';
+import { insertPhoto, getAllPhotos } from '../../db/queries/photos';
 import { getAgeInMonths } from '../../utils/dates';
+import { canAddPhoto } from '../../utils/premium';
+import { useAppStore } from '../../stores/appStore';
 import type { MilestoneType } from '../../types';
 
 interface AddPhotoSheetProps {
@@ -89,11 +91,19 @@ export function AddPhotoSheet({
     }
   };
 
+  const hasUnlockedPremium = useAppStore((s) => s.hasUnlockedPremium);
+
   const handleSave = async () => {
     if (!babyId || !imageUri) return;
 
     setIsSaving(true);
     try {
+      const existing = await getAllPhotos(babyId);
+      if (!canAddPhoto(existing.length, hasUnlockedPremium)) {
+        Alert.alert('Photo Limit', 'Photo limit reached. Upgrade to Dotsby Pro for unlimited photos.');
+        return;
+      }
+
       await insertPhoto({
         babyId,
         imageUri,

@@ -28,6 +28,7 @@ export default function HomeScreen() {
   const selectedBabyId = useAppStore((s) => s.selectedBabyId);
   const setSelectedBaby = useAppStore((s) => s.setSelectedBaby);
   const useMetricUnits = useAppStore((s) => s.useMetricUnits);
+  const hasUnlockedPremium = useAppStore((s) => s.hasUnlockedPremium);
   const babies = useBabyStore((s) => s.babies);
   const isDark = useIsDark();
 
@@ -63,7 +64,14 @@ export default function HomeScreen() {
       >
         {/* Header */}
         <View className="flex-row items-center justify-between mb-6">
-          <Text className="text-2xl font-bold text-black dark:text-white">Dotsby</Text>
+          <View className="flex-row items-center">
+            <Text className="text-2xl font-bold text-black dark:text-white">Dotsby</Text>
+            {hasUnlockedPremium && (
+              <View className="bg-black dark:bg-white ml-1.5 px-2 py-0.5 rounded-full">
+                <Text className="text-[10px] font-bold text-white dark:text-black">PRO</Text>
+              </View>
+            )}
+          </View>
           <Pressable
             onPress={() => {
               Haptics.selectionAsync();

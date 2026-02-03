@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, Pressable, RefreshControl } from 'react-native';
+import { View, Text, Pressable, RefreshControl, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useRouter } from 'expo-router';
 import { Plus, Heart, Grid3X3 } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { PhotoGallery } from '../../src/components/photos/PhotoGallery';
@@ -9,6 +10,7 @@ import { useAppStore } from '../../src/stores/appStore';
 import { useBabyStore } from '../../src/stores/babyStore';
 import { useIsDark } from '../../src/components/ThemeProvider';
 import { getAllPhotos, getFavoritePhotos } from '../../src/db/queries/photos';
+import { canAddPhoto } from '../../src/utils/premium';
 import type { MilestonePhoto } from '../../src/types';
 
 type FilterType = 'all' | 'favorites';
@@ -20,7 +22,9 @@ export default function PhotosScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
+  const router = useRouter();
   const selectedBabyId = useAppStore((s) => s.selectedBabyId);
+  const hasUnlockedPremium = useAppStore((s) => s.hasUnlockedPremium);
   const babies = useBabyStore((s) => s.babies);
   const selectedBaby = babies.find((b) => b.id === selectedBabyId);
   const isDark = useIsDark();
@@ -71,8 +75,21 @@ export default function PhotosScreen() {
             )}
           </View>
           <Pressable
-            onPress={() => {
+            onPress={async () => {
               Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+              if (!selectedBabyId) return;
+              const allPhotos = await getAllPhotos(selectedBabyId);
+              if (!canAddPhoto(allPhotos.length, hasUnlockedPremium)) {
+                Alert.alert(
+                  'Photo Limit',
+                  'Free accounts are limited to 24 photos. Upgrade to Dotsby Pro for unlimited photo storage.',
+                  [
+                    { text: 'Not Now', style: 'cancel' },
+                    { text: 'Upgrade', onPress: () => router.push('/premium') },
+                  ],
+                );
+                return;
+              }
               setShowAddSheet(true);
             }}
             className="w-12 h-12 bg-black dark:bg-white rounded-full items-center justify-center"

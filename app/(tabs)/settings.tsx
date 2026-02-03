@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Text, ScrollView, Pressable, Alert } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, ScrollView, Pressable, Alert, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import {
@@ -21,6 +21,8 @@ import { useIsDark } from '../../src/components/ThemeProvider';
 import { deleteBaby } from '../../src/db/queries/babies';
 import { useRefreshBabies } from '../../src/hooks/useDatabase';
 import { getAgeInMonths } from '../../src/utils/dates';
+import { canAddBaby } from '../../src/utils/premium';
+import { exportBabyDataAsCsv } from '../../src/services/csvExport';
 
 export default function SettingsScreen() {
   const router = useRouter();
@@ -34,6 +36,7 @@ export default function SettingsScreen() {
   const setSelectedBaby = useAppStore((s) => s.setSelectedBaby);
   const babies = useBabyStore((s) => s.babies);
   const refreshBabies = useRefreshBabies();
+  const [isExporting, setIsExporting] = useState(false);
 
   const iconColor = isDark ? '#999999' : '#666666';
   const checkBg = isDark ? 'bg-white' : 'bg-black';
@@ -113,6 +116,17 @@ export default function SettingsScreen() {
             <Pressable
               onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                if (!canAddBaby(babies.length, hasUnlockedPremium)) {
+                  Alert.alert(
+                    'Baby Profiles',
+                    'Free accounts are limited to 1 baby profile. Upgrade to Dotsby Pro to add more.',
+                    [
+                      { text: 'Not Now', style: 'cancel' },
+                      { text: 'Upgrade', onPress: () => router.push('/premium') },
+                    ],
+                  );
+                  return;
+                }
                 router.push('/onboarding/add-baby');
               }}
               className="flex-row items-center p-4"
@@ -200,7 +214,7 @@ export default function SettingsScreen() {
               <View className="flex-row items-center mb-2">
                 <Heart size={20} color={isDark ? '#000000' : '#FFFFFF'} strokeWidth={1.5} />
                 <Text className="text-white dark:text-black font-semibold ml-2">
-                  Upgrade to Dotsby+
+                  Upgrade to Dotsby Pro
                 </Text>
               </View>
               <Text className="text-gray-300 dark:text-gray-600 text-sm mb-3">
@@ -226,15 +240,42 @@ export default function SettingsScreen() {
           </Text>
           <View className="bg-gray-100 dark:bg-zinc-900 rounded-2xl overflow-hidden">
             <Pressable
-              onPress={() => {
+              onPress={async () => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                Alert.alert('Export Data', 'Data export feature coming soon.');
+                if (!hasUnlockedPremium) {
+                  Alert.alert(
+                    'Export Data',
+                    'CSV export is a Dotsby Pro feature. Upgrade to export your data.',
+                    [
+                      { text: 'Not Now', style: 'cancel' },
+                      { text: 'Upgrade', onPress: () => router.push('/premium') },
+                    ],
+                  );
+                  return;
+                }
+                const baby = babies.find((b) => b.id === selectedBabyId);
+                if (!baby) return;
+                setIsExporting(true);
+                try {
+                  await exportBabyDataAsCsv(baby.id, baby.name, baby.birthDate, useMetricUnits);
+                } catch (error) {
+                  console.error('Export failed:', error);
+                  Alert.alert('Export Failed', 'Something went wrong. Please try again.');
+                } finally {
+                  setIsExporting(false);
+                }
               }}
+              disabled={isExporting}
               className="flex-row items-center p-4"
+              style={isExporting ? { opacity: 0.5 } : undefined}
             >
               <FileDown size={20} color={iconColor} strokeWidth={1.5} />
               <Text className="flex-1 text-black dark:text-white ml-3">Export Data</Text>
-              <ChevronRight size={20} color="#999999" strokeWidth={1.5} />
+              {isExporting ? (
+                <ActivityIndicator size="small" color="#999999" />
+              ) : (
+                <ChevronRight size={20} color="#999999" strokeWidth={1.5} />
+              )}
             </Pressable>
           </View>
         </View>

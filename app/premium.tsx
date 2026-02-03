@@ -10,8 +10,6 @@ import {
   Clock,
   Camera,
   FileDown,
-  Share2,
-  Sparkles,
   Heart,
 } from 'lucide-react-native';
 import { useIsDark } from '../src/components/ThemeProvider';
@@ -109,7 +107,7 @@ export default function PremiumScreen() {
       if (isPremium) {
         unlockPremium();
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-        Alert.alert('Restored', 'Your Dotsby+ purchase has been restored.', [
+        Alert.alert('Restored', 'Your Dotsby Pro purchase has been restored.', [
           { text: 'OK' },
         ]);
       } else {
@@ -147,18 +145,6 @@ export default function PremiumScreen() {
       free: false,
       premium: true,
     },
-    {
-      icon: Share2,
-      title: 'Share with Doctor',
-      free: false,
-      premium: true,
-    },
-    {
-      icon: Sparkles,
-      title: 'Custom App Icons',
-      free: false,
-      premium: true,
-    },
   ];
 
   return (
@@ -177,9 +163,18 @@ export default function PremiumScreen() {
           <View className="w-16 h-16 bg-black dark:bg-white rounded-2xl items-center justify-center mb-4">
             <Heart size={32} color={isDark ? '#000000' : '#FFFFFF'} strokeWidth={1.5} />
           </View>
-          <Text className="text-3xl font-bold text-black dark:text-white">Dotsby+</Text>
+          <View className="flex-row items-center">
+            <Text className="text-3xl font-bold text-black dark:text-white">Dotsby</Text>
+            {hasUnlockedPremium && (
+              <View className="bg-black dark:bg-white ml-2 px-2.5 py-1 rounded-full">
+                <Text className="text-xs font-bold text-white dark:text-black">PRO</Text>
+              </View>
+            )}
+          </View>
           <Text className="text-gray-500 mt-2 text-center">
-            Everything you need for your growing family
+            {hasUnlockedPremium
+              ? 'You have access to all Pro features'
+              : 'Everything you need for your growing family'}
           </Text>
         </View>
 
@@ -195,7 +190,7 @@ export default function PremiumScreen() {
             </View>
             <View className="w-20 items-center">
               <View className="bg-black dark:bg-white px-2 py-1 rounded-full">
-                <Text className="text-xs font-bold text-white dark:text-black">PLUS</Text>
+                <Text className="text-xs font-bold text-white dark:text-black">PRO</Text>
               </View>
             </View>
           </View>
@@ -239,7 +234,7 @@ export default function PremiumScreen() {
           <View className="bg-green-500 py-4 rounded-full items-center mb-4">
             <View className="flex-row items-center">
               <Check size={20} color="#FFFFFF" strokeWidth={2.5} />
-              <Text className="text-white font-semibold ml-2">You have Dotsby+</Text>
+              <Text className="text-white font-semibold ml-2">You have Dotsby Pro</Text>
             </View>
           </View>
         ) : (
@@ -253,7 +248,7 @@ export default function PremiumScreen() {
               <ActivityIndicator color={isDark ? '#000000' : '#FFFFFF'} />
             ) : (
               <Text className="text-white dark:text-black font-semibold text-lg">
-                Unlock Dotsby+
+                Unlock Dotsby Pro
               </Text>
             )}
           </Pressable>

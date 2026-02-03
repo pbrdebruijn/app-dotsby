@@ -1,6 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import { View, Text, ScrollView, Pressable, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import { PatternGrid } from '../../src/components/patterns/PatternGrid';
 import { DayDetailSheet } from '../../src/components/patterns/DayDetailSheet';
@@ -9,19 +10,24 @@ import { useBabyStore } from '../../src/stores/babyStore';
 import { usePatternData } from '../../src/hooks/usePatternData';
 import { useIsDark } from '../../src/components/ThemeProvider';
 import { formatDuration } from '../../src/utils/dates';
+import { FREE_PATTERN_WEEKS_OPTIONS, PREMIUM_PATTERN_WEEKS_OPTIONS } from '../../src/utils/premium';
 import type { DayActivity } from '../../src/types';
 
-type TimeRange = 4 | 8 | 12;
+type TimeRange = 4 | 8 | 12 | 26 | 52;
 
 export default function PatternsScreen() {
   const [selectedDay, setSelectedDay] = useState<DayActivity | null>(null);
   const [timeRange, setTimeRange] = useState<TimeRange>(12);
   const [refreshing, setRefreshing] = useState(false);
 
+  const router = useRouter();
   const selectedBabyId = useAppStore((s) => s.selectedBabyId);
+  const hasUnlockedPremium = useAppStore((s) => s.hasUnlockedPremium);
   const babies = useBabyStore((s) => s.babies);
   const selectedBaby = babies.find((b) => b.id === selectedBabyId);
   const isDark = useIsDark();
+
+  const weeksOptions = hasUnlockedPremium ? PREMIUM_PATTERN_WEEKS_OPTIONS : FREE_PATTERN_WEEKS_OPTIONS;
 
   const { activities, isLoading, refresh } = usePatternData(selectedBabyId, timeRange);
 
@@ -66,26 +72,29 @@ export default function PatternsScreen() {
 
         {/* Time Range Selector */}
         <View className="flex-row gap-2 mb-6">
-          {([4, 8, 12] as TimeRange[]).map((range) => (
-            <Pressable
-              key={range}
-              onPress={() => {
-                Haptics.selectionAsync();
-                setTimeRange(range);
-              }}
-              className={`flex-1 py-2 rounded-full items-center ${
-                timeRange === range ? 'bg-black dark:bg-white' : 'bg-gray-100 dark:bg-zinc-800'
-              }`}
-            >
-              <Text
-                className={`font-medium ${
-                  timeRange === range ? 'text-white dark:text-black' : 'text-black dark:text-white'
+          {(weeksOptions as readonly number[]).map((range) => {
+            const label = range === 26 ? '6mo' : range === 52 ? '1yr' : `${range}w`;
+            return (
+              <Pressable
+                key={range}
+                onPress={() => {
+                  Haptics.selectionAsync();
+                  setTimeRange(range as TimeRange);
+                }}
+                className={`flex-1 py-2 rounded-full items-center ${
+                  timeRange === range ? 'bg-black dark:bg-white' : 'bg-gray-100 dark:bg-zinc-800'
                 }`}
               >
-                {range} weeks
-              </Text>
-            </Pressable>
-          ))}
+                <Text
+                  className={`font-medium ${
+                    timeRange === range ? 'text-white dark:text-black' : 'text-black dark:text-white'
+                  }`}
+                >
+                  {label}
+                </Text>
+              </Pressable>
+            );
+          })}
         </View>
 
         {/* Pattern Grid */}
@@ -98,6 +107,16 @@ export default function PatternsScreen() {
               setSelectedDay(day);
             }}
           />
+          {!hasUnlockedPremium && (
+            <Pressable
+              onPress={() => router.push('/premium')}
+              className="mt-3 items-center"
+            >
+              <Text className="text-gray-400 text-sm">
+                Upgrade for longer history
+              </Text>
+            </Pressable>
+          )}
         </View>
 
         {/* Stats Summary */}
