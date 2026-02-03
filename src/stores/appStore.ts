@@ -8,6 +8,7 @@ interface AppState {
   appearanceMode: 'light' | 'dark' | 'system';
   useMetricUnits: boolean;
   hasUnlockedPremium: boolean;
+  premiumUnlockDate: string | null;
 
   // Actions
   setOnboardingComplete: () => void;
@@ -15,6 +16,7 @@ interface AppState {
   setAppearanceMode: (mode: 'light' | 'dark' | 'system') => void;
   setUseMetricUnits: (useMetric: boolean) => void;
   unlockPremium: () => void;
+  revokePremium: () => void;
   reset: () => void;
 }
 
@@ -24,6 +26,7 @@ const initialState = {
   appearanceMode: 'system' as const,
   useMetricUnits: false,
   hasUnlockedPremium: false,
+  premiumUnlockDate: null as string | null,
 };
 
 export const useAppStore = create<AppState>()(
@@ -35,7 +38,10 @@ export const useAppStore = create<AppState>()(
       setSelectedBaby: (id) => set({ selectedBabyId: id }),
       setAppearanceMode: (mode) => set({ appearanceMode: mode }),
       setUseMetricUnits: (useMetric) => set({ useMetricUnits: useMetric }),
-      unlockPremium: () => set({ hasUnlockedPremium: true }),
+      unlockPremium: () =>
+        set({ hasUnlockedPremium: true, premiumUnlockDate: new Date().toISOString() }),
+      revokePremium: () =>
+        set({ hasUnlockedPremium: false, premiumUnlockDate: null }),
       reset: () => set(initialState),
     }),
     {

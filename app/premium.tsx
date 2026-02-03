@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Text, ScrollView, Pressable, Alert } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, ScrollView, Pressable, Alert, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
@@ -16,6 +16,11 @@ import {
 } from 'lucide-react-native';
 import { useIsDark } from '../src/components/ThemeProvider';
 import { useAppStore } from '../src/stores/appStore';
+import {
+  getOfferings,
+  purchasePremium,
+  restorePurchases,
+} from '../src/services/purchases';
 
 interface FeatureRowProps {
   icon: React.ElementType;
@@ -59,22 +64,62 @@ export default function PremiumScreen() {
   const unlockPremium = useAppStore((s) => s.unlockPremium);
   const hasUnlockedPremium = useAppStore((s) => s.hasUnlockedPremium);
 
-  const handlePurchase = () => {
+  const [price, setPrice] = useState('$9.99');
+  const [isPurchasing, setIsPurchasing] = useState(false);
+  const [isRestoring, setIsRestoring] = useState(false);
+
+  useEffect(() => {
+    getOfferings().then((offering) => {
+      const localizedPrice = offering?.lifetime?.product.priceString;
+      if (localizedPrice) {
+        setPrice(localizedPrice);
+      }
+    });
+  }, []);
+
+  const handlePurchase = async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    Alert.alert(
-      'Coming Soon',
-      'In-app purchases will be available when the app launches on the App Store.',
-      [{ text: 'OK' }]
-    );
+    setIsPurchasing(true);
+
+    try {
+      const { success, cancelled } = await purchasePremium();
+
+      if (success) {
+        unlockPremium();
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      } else if (!cancelled) {
+        Alert.alert(
+          'Purchase Failed',
+          'Something went wrong. Please try again.',
+          [{ text: 'OK' }]
+        );
+      }
+    } finally {
+      setIsPurchasing(false);
+    }
   };
 
-  const handleRestore = () => {
+  const handleRestore = async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    Alert.alert(
-      'Restore Purchases',
-      'No previous purchases found.',
-      [{ text: 'OK' }]
-    );
+    setIsRestoring(true);
+
+    try {
+      const isPremium = await restorePurchases();
+
+      if (isPremium) {
+        unlockPremium();
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        Alert.alert('Restored', 'Your Dotsby+ purchase has been restored.', [
+          { text: 'OK' },
+        ]);
+      } else {
+        Alert.alert('No Purchases Found', 'No previous purchases were found.', [
+          { text: 'OK' },
+        ]);
+      }
+    } finally {
+      setIsRestoring(false);
+    }
   };
 
   const features = [
@@ -171,7 +216,7 @@ export default function PremiumScreen() {
         {/* Free Features Callout */}
         <View className="bg-gray-100 dark:bg-zinc-800 rounded-2xl p-4 mb-6">
           <Text className="text-sm font-semibold text-black dark:text-white mb-2">
-            What's included free:
+            What&apos;s included free:
           </Text>
           <Text className="text-gray-500 text-sm leading-5">
             • All tracking features (sleep, feeding, diapers, pumping){'\n'}
@@ -185,7 +230,7 @@ export default function PremiumScreen() {
 
         {/* Pricing */}
         <View className="items-center mb-6">
-          <Text className="text-5xl font-bold text-black dark:text-white">$9.99</Text>
+          <Text className="text-5xl font-bold text-black dark:text-white">{price}</Text>
           <Text className="text-gray-500 mt-1">One-time purchase • No subscription</Text>
         </View>
 
@@ -200,18 +245,32 @@ export default function PremiumScreen() {
         ) : (
           <Pressable
             onPress={handlePurchase}
+            disabled={isPurchasing || isRestoring}
             className="bg-black dark:bg-white py-4 rounded-full items-center mb-4 active:opacity-80"
+            style={isPurchasing || isRestoring ? { opacity: 0.5 } : undefined}
           >
-            <Text className="text-white dark:text-black font-semibold text-lg">
-              Unlock Dotsby+
-            </Text>
+            {isPurchasing ? (
+              <ActivityIndicator color={isDark ? '#000000' : '#FFFFFF'} />
+            ) : (
+              <Text className="text-white dark:text-black font-semibold text-lg">
+                Unlock Dotsby+
+              </Text>
+            )}
           </Pressable>
         )}
 
         {/* Restore Purchases */}
         {!hasUnlockedPremium && (
-          <Pressable onPress={handleRestore} className="items-center py-2">
-            <Text className="text-gray-500 text-sm">Restore Purchases</Text>
+          <Pressable
+            onPress={handleRestore}
+            disabled={isPurchasing || isRestoring}
+            className="items-center py-2"
+          >
+            {isRestoring ? (
+              <ActivityIndicator size="small" color="#9CA3AF" />
+            ) : (
+              <Text className="text-gray-500 text-sm">Restore Purchases</Text>
+            )}
           </Pressable>
         )}
 

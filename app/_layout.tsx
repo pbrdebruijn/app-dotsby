@@ -7,6 +7,11 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import * as SplashScreen from 'expo-splash-screen';
 import { ThemeProvider, useIsDark } from '../src/components/ThemeProvider';
 import { useInitializeApp } from '../src/hooks/useDatabase';
+import { useAppStore } from '../src/stores/appStore';
+import {
+  initializePurchases,
+  checkPremiumEntitlement,
+} from '../src/services/purchases';
 import '../global.css';
 
 // Prevent auto-hiding splash screen
@@ -15,10 +20,20 @@ SplashScreen.preventAutoHideAsync();
 function RootLayoutContent() {
   const isDark = useIsDark();
   const { isReady, error } = useInitializeApp();
+  useEffect(() => {
+    initializePurchases();
+  }, []);
 
   useEffect(() => {
     if (isReady) {
       SplashScreen.hideAsync();
+      checkPremiumEntitlement().then((isPremium) => {
+        if (isPremium) {
+          useAppStore.getState().unlockPremium();
+        } else {
+          useAppStore.getState().revokePremium();
+        }
+      });
     }
   }, [isReady]);
 
