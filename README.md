@@ -1,50 +1,52 @@
-# Welcome to your Expo app 👋
+# Dotsby
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A local-first baby tracking app for tired parents. Track sleep, feedings, diapers, and pumping with pattern visualization and milestone photos.
 
-## Get started
+Built with Expo SDK 54, React Native, and TypeScript. All data stays on-device using SQLite.
 
-1. Install dependencies
-
-   ```bash
-   npm install
-   ```
-
-2. Start the app
-
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+## Getting Started
 
 ```bash
-npm run reset-project
+npm install
+npx expo start
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+Press `i` for iOS simulator or `a` for Android emulator.
 
-## Learn more
+## Features
 
-To learn more about developing your project with Expo, look at the following resources:
+- **Sleep tracking** — Timer-based nap and night sleep logging with wake window calculations
+- **Feeding tracking** — Nursing timer with side tracking, bottle logging, and solids
+- **Diaper tracking** — Wet, dirty, or both with optional color notes
+- **Pumping tracking** — Timer with left/right output tracking
+- **Pattern visualization** — GitHub-style contribution grid showing activity intensity over 4-12 weeks
+- **Milestone photos** — Monthly, developmental, and custom milestone photo gallery
+- **Smart schedules** — Age-based wake window reminders and nap suggestions
+- **Dark mode** — Full light/dark/system theme support
+- **Metric & Imperial** — Toggle between oz/ml throughout the app
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+## Tech Stack
 
-## Join the community
+- **Framework**: Expo SDK 54 + Expo Router v6 (file-based routing)
+- **Styling**: NativeWind v4 (Tailwind CSS for React Native)
+- **Database**: expo-sqlite (local SQLite)
+- **State**: Zustand with AsyncStorage persistence
+- **Icons**: lucide-react-native
+- **Dates**: date-fns
 
-Join our community of developers creating universal apps.
+## Project Structure
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+```
+app/                    # Expo Router screens
+  (tabs)/               # Tab navigation (Home, Patterns, Photos, Settings)
+  onboarding/           # First-launch onboarding flow
+  premium.tsx           # Dotsby+ comparison screen
+src/
+  components/           # UI components (ui/, logging/, patterns/, photos/, schedule/)
+  db/                   # SQLite database, schema, and query functions
+  hooks/                # Custom hooks (usePatternData, useSleepSchedule, etc.)
+  services/             # Business logic (sleep targets, pattern calculator, notifications)
+  stores/               # Zustand stores (app settings, baby data, timers)
+  types/                # TypeScript interfaces and type definitions
+  utils/                # Helpers (dates, units, ID generation)
+```
