@@ -8,7 +8,7 @@ import Purchases, {
 const REVENUECAT_IOS_API_KEY = 'test_wKArgeetWRrAXaEJIAfkpMOZcTz';
 const REVENUECAT_ANDROID_API_KEY = 'test_wKArgeetWRrAXaEJIAfkpMOZcTz';
 
-const ENTITLEMENT_ID = 'premium';
+const ENTITLEMENT_ID = 'Dotsby Pro';
 
 export async function initializePurchases(): Promise<void> {
   if (__DEV__) {
@@ -52,6 +52,11 @@ export async function purchasePremium(): Promise<{
     }
 
     const { customerInfo } = await Purchases.purchasePackage(premiumPackage);
+
+    if (__DEV__) {
+      console.log('Active entitlements:', JSON.stringify(customerInfo.entitlements.active));
+    }
+
     const isPremium =
       customerInfo.entitlements.active[ENTITLEMENT_ID] !== undefined;
 
