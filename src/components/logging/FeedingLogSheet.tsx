@@ -7,9 +7,8 @@ import { NumberInput } from '../ui/Input';
 import { NursingTimer } from './NursingTimer';
 import { insertFeedingLog } from '../../db/queries/feeding';
 import { useAppStore } from '../../stores/appStore';
-import { useIsDark } from '../ThemeProvider';
 import { getVolumeUnit, toStorageValue } from '../../utils/units';
-import type { FeedType, ContentType } from '../../types';
+import type { ContentType } from '../../types';
 
 interface FeedingLogSheetProps {
   isOpen: boolean;
@@ -31,7 +30,6 @@ export function FeedingLogSheet({
   const [mode, setMode] = useState<FeedingMode>('nursing');
   const [isSaving, setIsSaving] = useState(false);
   const useMetricUnits = useAppStore((s) => s.useMetricUnits);
-  const isDark = useIsDark();
 
   // Bottle state
   const [bottleAmount, setBottleAmount] = useState<number | null>(null);

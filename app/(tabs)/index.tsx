@@ -36,12 +36,13 @@ export default function HomeScreen() {
 
   const { activities, refresh: refreshPatterns } = usePatternData(selectedBabyId, 2);
   const stats = useTodayStats(selectedBabyId);
+  const refreshStats = stats.refresh;
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    await Promise.all([refreshPatterns(), stats.refresh()]);
+    await Promise.all([refreshPatterns(), refreshStats()]);
     setRefreshing(false);
-  }, [refreshPatterns, stats.refresh]);
+  }, [refreshPatterns, refreshStats]);
 
   const handleLogSaved = () => {
     stats.refresh();
@@ -147,7 +148,7 @@ export default function HomeScreen() {
 
         {/* Today's Schedule */}
         <View className="mb-6">
-          <Text className="text-lg font-semibold text-black dark:text-white mb-3">Today's Schedule</Text>
+          <Text className="text-lg font-semibold text-black dark:text-white mb-3">Today&apos;s Schedule</Text>
           <TodaySchedule babyId={selectedBabyId} />
         </View>
 

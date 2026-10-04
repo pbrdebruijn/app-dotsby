@@ -4,9 +4,8 @@ import * as Haptics from 'expo-haptics';
 import { Sheet } from '../ui/Sheet';
 import { Button } from '../ui/Button';
 import { Timer } from '../ui/Timer';
-import { useTimerStore, getElapsedSeconds } from '../../stores/timerStore';
+import { useTimerStore } from '../../stores/timerStore';
 import { insertSleepLog, endSleepLog, getActiveSleepLog } from '../../db/queries/sleep';
-import { useIsDark } from '../ThemeProvider';
 
 interface SleepLogSheetProps {
   isOpen: boolean;
@@ -21,7 +20,6 @@ export function SleepLogSheet({ isOpen, onClose, babyId, onSaved }: SleepLogShee
   const [sleepType, setSleepType] = useState<SleepType>('nap');
   const [isSaving, setIsSaving] = useState(false);
   const [activeDbSleep, setActiveDbSleep] = useState<{ id: string; startTime: string } | null>(null);
-  const isDark = useIsDark();
 
   const { activeSleepTimer, startSleepTimer, stopSleepTimer } = useTimerStore();
 
