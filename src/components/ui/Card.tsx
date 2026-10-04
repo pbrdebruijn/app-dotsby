@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Pressable } from 'react-native';
+import { View, Pressable, Text } from 'react-native';
 
 interface CardProps {
   children: React.ReactNode;
@@ -55,5 +55,3 @@ export function CardTitle({ children, className = '' }: CardTitleProps) {
     </View>
   );
 }
-
-import { Text } from 'react-native';

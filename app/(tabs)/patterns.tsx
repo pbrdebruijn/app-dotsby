@@ -33,7 +33,7 @@ export default function PatternsScreen() {
 
   const weeksOptions = hasUnlockedPremium ? PREMIUM_PATTERN_WEEKS_OPTIONS : FREE_PATTERN_WEEKS_OPTIONS;
 
-  const { activities, isLoading, refresh } = usePatternData(selectedBabyId, timeRange);
+  const { activities, refresh } = usePatternData(selectedBabyId, timeRange);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -73,7 +73,7 @@ export default function PatternsScreen() {
         <View className="mb-6">
           <Text className="text-2xl font-bold text-black dark:text-white">Patterns</Text>
           {selectedBaby && (
-            <Text className="text-gray-500 mt-1">{selectedBaby.name}'s activity</Text>
+            <Text className="text-gray-500 mt-1">{selectedBaby.name}&apos;s activity</Text>
           )}
         </View>
 

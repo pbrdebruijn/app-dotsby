@@ -54,7 +54,7 @@ export function PhotoGallery({ photos, onPhotoPress, numColumns = 3 }: PhotoGall
       <View className="flex-1 items-center justify-center p-8">
         <Text className="text-gray-400 text-center">No photos yet</Text>
         <Text className="text-gray-400 text-center text-sm mt-1">
-          Capture your baby's milestones
+          Capture your baby&apos;s milestones
         </Text>
       </View>
     );

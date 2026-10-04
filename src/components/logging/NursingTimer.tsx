@@ -3,7 +3,6 @@ import { View, Text, Pressable } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { useTimerStore, getElapsedSeconds } from '../../stores/timerStore';
 import { useElapsedTime } from '../../hooks/useTimer';
-import { useIsDark } from '../ThemeProvider';
 import { formatTimerDisplay } from '../../utils/dates';
 
 interface NursingTimerProps {
@@ -15,7 +14,6 @@ interface NursingTimerProps {
 export function NursingTimer({ babyId, lastSide, onComplete }: NursingTimerProps) {
   const { activeNursingTimer, startNursingTimer, switchNursingSide, stopNursingTimer } =
     useTimerStore();
-  const isDark = useIsDark();
 
   const isRunning = activeNursingTimer?.babyId === babyId;
   const currentSide = activeNursingTimer?.side;

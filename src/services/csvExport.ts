@@ -101,7 +101,8 @@ export async function exportBabyDataAsCsv(
   const csv = lines.join('\n');
   const safeName = babyName.replace(/[^a-zA-Z0-9]/g, '_');
   const file = new File(Paths.cache, `dotsby_${safeName}_export.csv`);
-  file.text = csv;
+  file.create({ overwrite: true });
+  file.write(csv);
 
   await Sharing.shareAsync(file.uri, {
     mimeType: 'text/csv',

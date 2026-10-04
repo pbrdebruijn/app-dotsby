@@ -83,7 +83,7 @@ export default function AddBabyScreen() {
         <View className="mb-8">
           <Text className="text-2xl font-bold text-black dark:text-white">Add your baby</Text>
           <Text className="text-gray-500 mt-2">
-            We'll use this to calculate age-appropriate schedules
+            We&apos;ll use this to calculate age-appropriate schedules
           </Text>
         </View>
 

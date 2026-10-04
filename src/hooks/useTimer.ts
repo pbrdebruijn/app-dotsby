@@ -30,7 +30,7 @@ export function useStopwatch() {
   const [elapsed, setElapsed] = useState(0);
 
   useEffect(() => {
-    let interval: NodeJS.Timeout;
+    let interval: ReturnType<typeof setInterval> | undefined;
 
     if (isRunning && startTime) {
       setElapsed(Math.floor((Date.now() - startTime.getTime()) / 1000));

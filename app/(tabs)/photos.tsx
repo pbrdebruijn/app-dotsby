@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, Pressable, RefreshControl, Alert } from 'react-native';
+import { View, Text, Pressable, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Plus, Heart, Grid3X3 } from 'lucide-react-native';
@@ -19,8 +19,6 @@ export default function PhotosScreen() {
   const [photos, setPhotos] = useState<MilestonePhoto[]>([]);
   const [filter, setFilter] = useState<FilterType>('all');
   const [showAddSheet, setShowAddSheet] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
 
   const router = useRouter();
   const selectedBabyId = useAppStore((s) => s.selectedBabyId);
@@ -32,7 +30,6 @@ export default function PhotosScreen() {
   const loadPhotos = useCallback(async () => {
     if (!selectedBabyId) {
       setPhotos([]);
-      setIsLoading(false);
       return;
     }
 
@@ -43,19 +40,11 @@ export default function PhotosScreen() {
       setPhotos(data);
     } catch (error) {
       console.error('Error loading photos:', error);
-    } finally {
-      setIsLoading(false);
     }
   }, [selectedBabyId, filter]);
 
   useEffect(() => {
     loadPhotos();
-  }, [loadPhotos]);
-
-  const onRefresh = useCallback(async () => {
-    setRefreshing(true);
-    await loadPhotos();
-    setRefreshing(false);
   }, [loadPhotos]);
 
   const handlePhotoPress = (photo: MilestonePhoto) => {
@@ -71,7 +60,7 @@ export default function PhotosScreen() {
           <View>
             <Text className="text-2xl font-bold text-black dark:text-white">Photos</Text>
             {selectedBaby && (
-              <Text className="text-gray-500 mt-1">{selectedBaby.name}'s milestones</Text>
+              <Text className="text-gray-500 mt-1">{selectedBaby.name}&apos;s milestones</Text>
             )}
           </View>
           <Pressable
